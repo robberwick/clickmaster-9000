@@ -33,14 +33,20 @@ encoder_handler.pins = (
     (board.D9, board.D10, None),  
 )
 
-current_layer = 0
 def change_layer(keyboard, encoder_id, state):
-    global current_layer
+    # Because we are switching the  default layer, we can use this index
+    current_layer = keyboard.active_layers[-1]
     current_layer = current_layer - state["direction"]
-    current_layer = max(0, min(current_layer, 2))
+    current_layer = max(0, min(current_layer, len(keyboard.keymap) - 1))
     layers.activate_layer(keyboard, current_layer, idx=-1)
 
 encoder_handler.on_move_do = change_layer
+
+# Still needed to make encoder responsive
+encoder_handler.map = [
+    ((KC.NO, KC.NO, KC.NO),),
+]
+
 
 # OLED display
 i2c_bus = busio.I2C(board.D5, board.D4)
@@ -101,11 +107,12 @@ keyboard.keymap = [
         KC.G, KC.H, KC.I,
         KC.J, KC.K, KC.TRNS
     ],
-]
-
-# Still needed to make encoder responsive
-encoder_handler.map = [
-    ((KC.NO, KC.NO, KC.NO),),
+    [
+        KC.A, KC.B, KC.C,
+        KC.D, KC.E, KC.F,
+        KC.G, KC.H, KC.I,
+        KC.J, KC.K, KC.TRNS
+    ],
 ]
 
 if __name__ == '__main__':
