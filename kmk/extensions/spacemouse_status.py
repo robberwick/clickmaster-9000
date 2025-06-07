@@ -3,25 +3,22 @@ from micropython import const
 
 from kmk.extensions import Extension
 
-_NUMLOCK = const(0x01)
-_CAPSLOCK = const(0x02)
-_SCROLLLOCK = const(0x04)
-_COMPOSE = const(0x08)
-_KANA = const(0x10)
+_SIX_AXIS_USAGE = const(0x08)
+_LED = const(0x01)
 
 
-class LockStatus(Extension):
+class SpacemouseStatus(Extension):
     def __init__(self):
         self.report = 0
         self.hid = None
         self._report_updated = False
 
     def __repr__(self):
-        return f'LockStatus(report={self.report})'
+        return f'SpacemouseStatus(report={self.report})'
 
     def during_bootup(self, sandbox):
         for device in usb_hid.devices:
-            if device.usage == usb_hid.Device.KEYBOARD.usage:
+            if device.usage == _SIX_AXIS_USAGE:
                 self.hid = device
         if self.hid is None:
             raise RuntimeError
@@ -36,7 +33,7 @@ class LockStatus(Extension):
         return
 
     def after_hid_send(self, sandbox):
-        report = self.hid.get_last_received_report()
+        report = self.hid.get_last_received_report(4)
         if report is None:
             self._report_updated = False
         else:
@@ -53,17 +50,5 @@ class LockStatus(Extension):
     def report_updated(self):
         return self._report_updated
 
-    def get_num_lock(self):
-        return bool(self.report & _NUMLOCK)
-
-    def get_caps_lock(self):
-        return bool(self.report & _CAPSLOCK)
-
-    def get_scroll_lock(self):
-        return bool(self.report & _SCROLLLOCK)
-
-    def get_compose(self):
-        return bool(self.report & _COMPOSE)
-
-    def get_kana(self):
-        return bool(self.report & _KANA)
+    def get_led(self):
+        return bool(self.report & _LED)
