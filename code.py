@@ -33,6 +33,15 @@ encoder_handler.pins = (
     (board.D9, board.D10, None),  
 )
 
+current_layer = 0
+def change_layer(keyboard, encoder_id, state):
+    global current_layer
+    current_layer = current_layer - state["direction"]
+    current_layer = max(0, min(current_layer, 2))
+    layers.activate_layer(keyboard, current_layer, idx=-1)
+
+encoder_handler.on_move_do = change_layer
+
 # OLED display
 i2c_bus = busio.I2C(board.D5, board.D4)
 
@@ -77,7 +86,6 @@ keyboard.extensions.append(rgb)
 
 #Layer keys
 LAYER_TAP = KC.LT(1, KC.PENT, prefer_hold=True, tap_interrupted=False, tap_time=250) # any tap longer than 250ms will be interpreted as a hold
-
 keyboard.keymap = [
     # Base layer - numpad
     [
@@ -95,10 +103,11 @@ keyboard.keymap = [
     ],
 ]
 
+# Still needed to make encoder responsive
 encoder_handler.map = [
-    (( KC.VOLU, KC.VOLD, KC.NO), ), # Layer 0
-    (( KC.RGB_HUI, KC.RGB_HUD, KC.NO), ), # Layer 1
+    ((KC.NO, KC.NO, KC.NO),),
 ]
+
 if __name__ == '__main__':
     keyboard.go()
  
